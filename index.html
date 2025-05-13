@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indigenous Peoples of the Philippines</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #4f5253;
+            color: white;
+            text-align: center;
+            padding: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+
+        #map {
+            width: 100%;
+            height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .legend {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            line-height: 1.5;
+            margin-top: 1rem;
+        }
+        .legend i {
+            width: 15px;
+            height: 15px;
+            float: left;
+            margin-right: 8px;
+            border-radius: 50%;
+        }
+        .info {
+            padding: 6px 12px;
+            background: white;
+            border-radius: 5px;
+            max-width: 250px;
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #1a5276;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        .info ul {
+            padding-left: 1rem;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #1a5276;
+            color: white;
+            margin-top: 2rem;
+        }
+        
+        /* Improved map container styling */
+        .map-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        
+        /* Custom controls */
+        .leaflet-control-zoom {
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Ensure map fills container */
+        .leaflet-container {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Indigenous Peoples Interactive Map</h1>
+    
+    </header>
+    
+    <div class="container">
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        <div class="legend">
+            <div><i style="background: #3498db;"></i> Philippine Indigenous Groups</div>
+            <div><i style="background: #e74c3c;"></i> Other Indigenous Peoples</div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 Indigenous Peoples Map | Lawrence Kier Mendoza</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map with bounds to prevent empty spaces
+        const map = L.map('map', {
+            minZoom: 2,
+            maxBounds: [
+                [-90, -180],  // Southwest corner
+                [90, 180]     // Northeast corner
+            ],
+            maxBoundsViscosity: 1.0  // Strict bounds
+        }).setView([12.0, 122.0], 5);
+
+        // Add OpenStreetMap tiles with better contrast
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            noWrap: true  // Prevent map wrapping
+        }).addTo(map);
+
+        // Set the maximum zoom level to show all markers
+        map.setMaxBounds(map.getBounds().pad(0.5));
+
+        // Custom icon for Philippine groups
+        const phIcon = L.divIcon({
+            className: 'ph-marker',
+            html: '<div style="background-color: #3498db; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>',
+            iconSize: [20, 20]
+        });
+
+        // Custom icon for other groups
+        const otherIcon = L.divIcon({
+            className: 'other-marker',
+            html: '<div style="background-color: #e74c3c; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>',
+            iconSize: [20, 20]
+        });
+
+        // Philippine indigenous groups data
+        const phGroups = [
+            {
+                name: "Iraya",
+                coords: [13.4333, 120.4333],
+                challenges: [
+                    "Land dispossession due to mining and logging",
+                    "Loss of cultural identity among youth",
+                    "Limited access to education and healthcare",
+                    "Discrimination and marginalization"
+                ]
+            },
+            {
+                name: "Alangan",
+                coords: [13.0, 121.0833],
+                challenges: [
+                    "Encroachment of settlers on ancestral lands",
+                    "Limited government recognition",
+                    "Environmental degradation",
+                    "Poverty and lack of opportunities"
+                ]
+            },
+            {
+                name: "Tadyawan",
+                coords: [13.25, 121.25],
+                challenges: [
+                    "Displacement from ancestral domains",
+                    "Loss of traditional knowledge",
+                    "Limited political representation",
+                    "Health issues from changing lifestyles"
+                ]
+            },
+            {
+                name: "Aeta",
+                coords: [15.0, 120.5],
+                challenges: [
+                    "Displacement from volcanic eruptions",
+                    "Difficulty preserving nomadic lifestyle",
+                    "Limited access to basic services",
+                    "Discrimination based on appearance"
+                ]
+            },
+            {
+                name: "Agta",
+                coords: [16.5, 122.0],
+                challenges: [
+                    "Loss of hunting grounds to deforestation",
+                    "Assimilation pressures",
+                    "Lack of legal land recognition",
+                    "Vulnerability to climate change"
+                ]
+            },
+            {
+                name: "Igorot",
+                coords: [16.75, 120.75],
+                challenges: [
+                    "Commercialization of culture",
+                    "Land conflicts with government/private entities",
+                    "Water resource disputes",
+                    "Youth migration eroding culture"
+                ]
+            },
+            {
+                name: "Ifugao",
+                coords: [16.8333, 121.1667],
+                challenges: [
+                    "Threats to rice terraces",
+                    "Tourism pressures on cultural sites",
+                    "Land conversion for commercial use",
+                    "Shortage of traditional rice varieties"
+                ]
+            },
+            {
+                name: "Kankanaey",
+                coords: [16.5833, 120.8333],
+                challenges: [
+                    "Mining impacts on land/water",
+                    "Loss of traditional farming",
+                    "Limited local governance participation",
+                    "Economic marginalization"
+                ]
+            },
+            {
+                name: "Bontoc",
+                coords: [17.0833, 120.9167],
+                challenges: [
+                    "Infrastructure disrupting lands",
+                    "Cultural appropriation",
+                    "Limited quality education access",
+                    "Health disparities"
+                ]
+            },
+            {
+                name: "Manobo",
+                coords: [7.9167, 125.0833],
+                challenges: [
+                    "Armed conflicts in territories",
+                    "Land grabbing by agribusiness",
+                    "Militarization of ancestral domains",
+                    "Food insecurity"
+                ]
+            },
+            {
+                name: "T'boli",
+                coords: [6.25, 124.75],
+                challenges: [
+                    "Exploitation of traditional arts",
+                    "Loss of sacred sites",
+                    "Limited political representation",
+                    "Environmental pollution"
+                ]
+            },
+            {
+                name: "Subanen",
+                coords: [7.8333, 123.4167],
+                challenges: [
+                    "Mining encroachment",
+                    "Displacement from conflicts",
+                    "Loss of governance systems",
+                    "Limited justice access"
+                ]
+            },
+            {
+                name: "Mandaya",
+                coords: [7.5, 126.0],
+                challenges: [
+                    "Commercial logging threats",
+                    "Cultural assimilation pressures",
+                    "Limited healthcare in remote areas",
+                    "Economic exploitation"
+                ]
+            }
+        ];
+
+        // Other countries with indigenous peoples
+        const otherGroups = [
+            { name: "Native Americans", country: "United States", coords: [39.8, -98.5] },
+            { name: "First Nations", country: "Canada", coords: [56.0, -106.0] },
+            { name: "Various tribes", country: "Brazil", coords: [-10.0, -55.0] },
+            { name: "Mapuche", country: "Chile", coords: [-38.0, -72.0] },
+            { name: "Adivasi", country: "India", coords: [21.0, 78.0] },
+            { name: "Orang Asli", country: "Malaysia", coords: [4.5, 102.0] },
+            { name: "Aboriginal peoples", country: "Australia", coords: [-25.0, 135.0] },
+            { name: "Māori", country: "New Zealand", coords: [-41.0, 174.0] },
+            { name: "Sami", country: "Norway/Sweden/Finland", coords: [68.0, 20.0] },
+            { name: "Ainu", country: "Japan", coords: [43.0, 143.0] }
+        ];
+
+        // Add Philippine groups to map
+        phGroups.forEach(group => {
+            const marker = L.marker(group.coords, { icon: phIcon }).addTo(map);
+            marker.bindPopup(`
+                <div class="info">
+                    <h3>${group.name}</h3>
+                    <p><em>Philippines</em></p>
+                    <p><strong>Challenges faced:</strong></p>
+                    <ul>
+                        ${group.challenges.map(challenge => `<li>${challenge}</li>`).join('')}
+                    </ul>
+                </div>
+            `);
+        });
+
+        // Add other groups to map
+        otherGroups.forEach(group => {
+            const marker = L.marker(group.coords, { icon: otherIcon }).addTo(map);
+            marker.bindPopup(`
+                <div class="info">
+                    <h3>${group.name}</h3>
+                    <p><em>${group.country}</em></p>
+                    <p>This country has indigenous populations with their own unique cultures and challenges.</p>
+                </div>
+            `);
+        });
+
+        // Add legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <div><i style="background: #3498db;"></i> Philippine Indigenous</div>
+                <div><i style="background: #e74c3c;"></i> Other Indigenous</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+        
+        // Fit bounds to show all markers when zoomed out
+        const groupLocations = [
+            ...phGroups.map(g => g.coords),
+            ...otherGroups.map(g => g.coords)
+        ];
+        const bounds = L.latLngBounds(groupLocations);
+        map.fitBounds(bounds.pad(0.05)); // 5% padding instead of 20%
+ // Add 20% padding
+        
+        // Prevent zooming out too far
+        map.on('zoomend', function() {
+            if (map.getZoom() < 2) {
+                map.setZoom(2);
+            }
+        });
+    </script>
+</body>
+</html>
